@@ -7,7 +7,7 @@ various vehicle characteristics.
 
 import pandas as pd
 import seaborn as sns
-
+import matplotlib.pyplot as plt
 import statistics_1 as stats
 import visualisation as vis
 
@@ -21,10 +21,6 @@ target = vehicle['CO2 emissions (g/km)'].values
 stats.calculate_coefficients(features, target)
 stats.calculate_confidence_intervals(features, target)
 
-# Set the theme for the plots
-sns.set_theme(rc={'figure.figsize': (10, 4)})
-
-# Plot the pairplot for the first 15 columns
-sns.pairplot(vehicle.iloc[:, 0:15])
-
+vis.graphic()
 vis.heatmap()
+

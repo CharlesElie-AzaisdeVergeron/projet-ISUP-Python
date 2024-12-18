@@ -79,7 +79,7 @@ def calculate_coefficients(x_data, y):
     ols = OrdinaryLeastSquares(intercept=True)
     ols.fit(x_data, y)
     coeffs = ols.get_coeffs()
-    print('Coefficients:', coeffs)
+    print('Coefficients:', coeffs[1:])
     r_squared = ols.determination_coefficient(x_data, y)
     print('R²:', r_squared)
     return (coeffs, r_squared)
@@ -112,5 +112,9 @@ def calculate_confidence_intervals(x_data, y):
     t_value = stats.t.ppf(0.975, df=df)  # 95% confidence interval
     conf_intervals = np.array([coeffs - t_value * std_errors,
                             coeffs + t_value * std_errors]).T
-    print(conf_intervals)
+
+    print(f"1er paramètre : [{conf_intervals[1][0]:.1f} ,{conf_intervals[1][1]:.1f}]")
+    print(f"2eme paramètre :[{conf_intervals[2][0]:.1f},{conf_intervals[2][1]:.1f}]")
+    print(f"3eme paramètre : [{conf_intervals[3][0]:.1f},{conf_intervals[3][1]:.1f}]")
+
     return conf_intervals
