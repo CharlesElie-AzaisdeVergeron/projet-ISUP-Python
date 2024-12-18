@@ -1,80 +1,116 @@
+"""Module for performing ordinary least squares regression and statistical analysis
+on vehicle data."""
 import numpy as np
 import pandas as pd
-import scipy.stats as stats
+from scipy import stats
 
 vehicle = pd.read_csv("vehicles.csv")
 
 class OrdinaryLeastSquares:
+    """Implements Ordinary Least Squares regression with optional intercept term."""
+
     def __init__(self, intercept=True):
+        """Initialize OLS regression.
+        Args:
+            intercept (bool): Whether to include intercept term. Defaults to True.
+        """
         self.intercept = intercept
         self.coeffs_ = None
 
-    def fit(self, X, y):
+    def fit(self, x_train, y):
+        """Fit the OLS model to training data.
+        Args:
+            x_train (np.ndarray): Training features
+            y (np.ndarray): Target values
+        Returns:
+            self: Returns instance of class
+        """
         if self.intercept:
-            X = np.hstack((np.ones((X.shape[0], 1)), X))  # Add intercept column
-        # OLS estimator
-        self.coeffs_ = np.linalg.inv(X.T @ X) @ X.T @ y
+            x_train = np.hstack((np.ones((x_train.shape[0], 1)), x_train))
+        self.coeffs_ = np.linalg.inv(x_train.T @ x_train) @ x_train.T @ y
         return self
 
-    def predict(self, Xt):
+    def predict(self, x_test):
+        """Predict target values for test data.
+        Args:
+            x_test (np.ndarray): Test features
+        
+        Returns:
+            np.ndarray: Predicted values
+        """
         if self.intercept:
-            Xt = np.hstack((np.ones((Xt.shape[0], 1)), Xt))  # Add intercept column
-        return Xt @ self.coeffs_
+            x_test = np.hstack((np.ones((x_test.shape[0], 1)), x_test))
+        return x_test @ self.coeffs_
 
     def get_coeffs(self):
+        """Get the fitted coefficients.
+        
+        Returns:
+            np.ndarray: Model coefficients
+        """
         return self.coeffs_
 
-    def determination_coefficient(self, X, y):
-        y_pred = self.predict(X)
+    def determination_coefficient(self, x_data, y):
+        """Calculate the coefficient of determination (R²).
+        
+        Args:
+            x_data (np.ndarray): Input features
+            y (np.ndarray): Actual target values
+        
+        Returns:
+            float: R² value
+        """
+        y_pred = self.predict(x_data)
         ss_total = np.sum((y - np.mean(y)) ** 2)
         ss_res = np.sum((y - y_pred) ** 2)
         r_squared = 1 - (ss_res / ss_total)
         return r_squared
 
-# Loading the dataset
-df = pd.read_csv('/home/leferre/Bureau/Fac/python/vehicles.csv')
-
-def Coef(features,X,y):
-    # Creating and training the OLS model
+def calculate_coefficients(x_data, y):
+    """Calculate regression coefficients and R² value.
+    
+    Args:
+        x_data (np.ndarray): Input features
+        y (np.ndarray): Target values
+    
+    Returns:
+        tuple: Tuple containing coefficients and R² value
+    """
     ols = OrdinaryLeastSquares(intercept=True)
-    ols.fit(X, y)
-    coef = ols.get_coeffs()
-# Print coefficients
-    print('Coefficients:', ols.get_coeffs())
-
-# Predicting based on the dataset
-    y_pred = ols.predict(X)
-
-# Calculating R^2
-    r_squared = ols.determination_coefficient(X, y)
-    print('R^2:', r_squared)
-    K= (coef , r_squared)
-    return K
+    ols.fit(x_data, y)
+    coeffs = ols.get_coeffs()
+    print('Coefficients:', coeffs)
+    r_squared = ols.determination_coefficient(x_data, y)
+    print('R²:', r_squared)
+    return (coeffs, r_squared)
 
 
-def prediction(X,y):
-    K=Coef( features=['Engine size (L)', 'Cylinders', 'Combined (L/100 km)'], X = vehicle[['Engine size (L)', 'Cylinders', 'Combined (L/100 km)']].values, y = vehicle['CO2 emissions (g/km)'].values)
-    coef = K[0]
-    saved_X = X
-    ones_column = np.ones((X.shape[0], 1))
-    X = np.hstack((saved_X, ones_column))
-    y_pred = X @ coef
+def calculate_confidence_intervals(x_data, y):
+    """Calculate regression confidence intervals.
+    
+    Args:
+        x_data (np.ndarray): Input features
+        y (np.ndarray): Target values
+    
+    Returns:
+        np.ndarray: Confidence intervals for coefficients
+    """
+    selected_features = ['Engine size (L)', 'Cylinders', 'Combined (L/100 km)']
+    x_vehicle = vehicle[selected_features].values
+    y_vehicle = vehicle['CO2 emissions (g/km)'].values
+    result = calculate_coefficients(x_vehicle, y_vehicle)
+    coeffs = result[0]
+    x_with_intercept = np.hstack((x_data, np.ones((x_data.shape[0], 1))))
+    y_pred = x_with_intercept @ coeffs
     residuals = y - y_pred
 
-    # Calculer la variance des erreurs
-    RSS = np.sum(residuals**2)
-    variance = RSS / (X.shape[0] - X.shape[1])
-
-    #    Calculer la matrice de variance-covariance des coefficients
-    var_cov_matrix = variance * np.linalg.inv(X.T @ X)
-
-#    Calculer les erreurs standard des coefficients
+    sum_squared_residuals = np.sum(residuals**2)
+    variance = sum_squared_residuals / (x_with_intercept.shape[0] - x_with_intercept.shape[1])
+    var_cov_matrix = variance * np.linalg.inv(x_with_intercept.T @ x_with_intercept)
     std_errors = np.sqrt(np.diag(var_cov_matrix))
-
-    # Obtenir les intervalles de confiance
-    t_value = stats.t.ppf(1 - 0.025, df=X.shape[0] - X.shape[1])  # Pour un intervalle de confiance à 95%
-    conf_intervals = np.array([coef - t_value * std_errors, coef + t_value * std_errors]).T
+    df = x_with_intercept.shape[0] - x_with_intercept.shape[1]
+    t_value = stats.t.ppf(0.975, df=df)  # 95% confidence interval
+    conf_intervals = np.array([coeffs - t_value * std_errors,
+                            coeffs + t_value * std_errors]).T
     print(conf_intervals)
     return conf_intervals
-
-
