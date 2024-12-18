@@ -51,15 +51,14 @@ def Coef(features,X,y):
     K= (coef , r_squared)
     return K
 
+
 def prediction(X,y):
     K=Coef( features=['Engine size (L)', 'Cylinders', 'Combined (L/100 km)'], X = vehicle[['Engine size (L)', 'Cylinders', 'Combined (L/100 km)']].values, y = vehicle['CO2 emissions (g/km)'].values)
     coef = K[0]
     saved_X = X
     ones_column = np.ones((X.shape[0], 1))
     X = np.hstack((saved_X, ones_column))
-    ols = OrdinaryLeastSquares(intercept=True)
-    ols.fit(X,y)
-    y_pred = X @ ols.get_coeffs()
+    y_pred = X @ coef
     residuals = y - y_pred
 
     # Calculer la variance des erreurs
@@ -77,4 +76,5 @@ def prediction(X,y):
     conf_intervals = np.array([coef - t_value * std_errors, coef + t_value * std_errors]).T
     print(conf_intervals)
     return conf_intervals
+
 
