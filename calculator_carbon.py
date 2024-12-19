@@ -288,13 +288,10 @@ def gather_inputs(questions : dict) -> tuple:
 
     return type_en, qte_en, type_eq
 
-
-
 if __name__ == "__main__":
     root = tk.Tk()
     app = SelectionApp(root)
     root.mainloop()
-
     res = calculate(gather_inputs(questions), energies, equipements)
     print(f"Total CO2 énergie : {res[0]}")
     print(f"Total CO2 équipements : {res[1]}")
