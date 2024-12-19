@@ -19,7 +19,6 @@ glaces = aliments[aliments['main_type'].str.contains('Glaces et sorbets')]
 gras = aliments[aliments['main_type'].str.contains(' Matières grasses')]
 bebes = aliments[aliments['main_type'].str.contains('Aliments infantiles')]
 
-nom_equipement = equipements['complete_name'].to_list()
 
 
 def tri(L :list ):
@@ -164,19 +163,25 @@ class SelectionApp:
                 result_json['TTCO2'] += co2
                 result_json['TTCO2'] = round(result_json['TTCO2'], 2)
                 
-            print(result_json['TTCO2'])
+            print(f"les émission de Co2 totales pour les aliments sont de : {result_json['TTCO2']:.1f}t")
                 
             json.dump(result_json, f, ensure_ascii=False, indent=2)
         messagebox.showinfo("Succès", f"Sélections sauvegardées dans {filename}")
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = SelectionApp(root)
-    root.mainloop()
 
+
+energie = pd.read_csv("energie.csv")
+equipements = pd.read_csv("equipements.csv")
+
+def remove_outer_spaces(text: str) -> str:
+    L=[]
+    for i in list(energie["french_name        "]):
+        L.append(i.strip())
+    return L
 
 
 def calculate():
+    
     print("L'évaluation est approximative car elle regroupe les consommations de plusieurs produits d'une même catégorie pour faciliter l'utilisation.")
     
     questions = {
@@ -231,17 +236,27 @@ def calculate():
     }
     
 
-    #for ty in questions:
-    #    print(f"\n\nCatégorie : {ty}")
-     #   for subty in questions.get(ty):
-      #      input(questions.get(ty).get(subty))
-
+    for ty in questions:
+        print(f"\n\nCatégorie : {ty}")
+        Answers=[]
+        for subty in questions.get(ty):
+            x=input(questions.get(ty).get(subty))
+            Answers.append(x)
+            if len(Answers)==2:
+                y=float(x)
+                i=remove_outer_spaces(list(energie["french_name        "])).index(Answers[0])
+                ser = energie.loc[i:i]['CO2']
+                energy=float(ser.iloc[0])*y
+        return energy
+    
     #print(f"Votre empreinte carbone est de {carbone_empreinte:.1f} tonnes")
-
-    print("\n\nDétails")
+    
+calculate()
+    #print("\n\nDétails")
     #print(f"Alimentation : {'TTCO2':.1f} t")
     #print(f"Energie : {energie:.1f} t")
     #print(f"Equipements: {equipement:.1f}t")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
