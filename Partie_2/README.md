@@ -14,18 +14,17 @@ git clone
 ```
 
 Pour exécuter les scripts dans ce fichier certaines bibliothèques python sont nécessaires, exécuter la commande suivante dans le dossier téléchargé avec votre env python activé avant de commencer :
-```
-pip install tkinter
-pip install numpy
-pip install pandas
+``` 
+( je n ais pas reussit a generer le fichier requierements.txt. Les bibliotheques necessaires sont dans le fichier setup.cfg)
+pip install .
  
 ```
 
 ## Utilisation
 
-Le script principal est dans le fichier `calculator_carbon.py`. Pour l'utiliser exécuter :
+Le script principal est dans le fichier `calculator_carbon/calculator_carbon.py`. Pour l'utiliser exécuter :
 ```
-python calculator_carbon.py
+python calculator_carbon/calculator_carbon.py
 ```
 et suivez les instructions !
 
