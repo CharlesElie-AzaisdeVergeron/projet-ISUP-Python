@@ -5,8 +5,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-energie = pd.read_csv("energie.csv")
-equipements = pd.read_csv("equipements.csv")
 aliments = pd.read_csv("aliments.csv")
 
 viandes = aliments[aliments['main_type'].str.contains('viandes', case=False)]
@@ -23,12 +21,6 @@ bebes = aliments[aliments['main_type'].str.contains('Aliments infantiles')]
 
 nom_equipement = equipements['complete_name'].to_list()
 
-def merge(L,M: list):
-    N=[]
-    for i in range(len(L)):
-        if M[i] != 'Nan' :
-            N.append(str(L[i])+'-'+str(M[i]))
-    return N
 
 def tri(L :list ):
     T = []
@@ -37,27 +29,29 @@ def tri(L :list ):
             T = T + [i]
     return T
 
-
 class SelectionApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Sélections Multiples")
         self.root.geometry("800x400")
         
+        # Liste pour stocker les sélections
+        self.selections = []
+        
         # Options pour les menus déroulants
         self.options_categorie = tri(list(aliments['main_type']))
         self.options_items = {
-            tri(list(aliments['main_type']))[0] : merge(list(cereales['french_name']),list(cereales['french_attribut'])),
-            tri(list(aliments['main_type']))[1]: merge(list(Boisson['french_name']),list(Boisson['french_attribut'])),
-            tri(list(aliments['main_type']))[2]: merge(list(Fruits['french_name']),list(Fruits['french_attribut'])),
-            tri(list(aliments['main_type']))[3]: merge(list(Entreés['french_name']),list(Entreés['french_attribut'])),
-            tri(list(aliments['main_type']))[4]: merge(list(lait['french_name']),list(lait['french_attribut'])),
-            tri(list(aliments['main_type']))[5]: merge(list(viandes['french_name']),list(viandes['french_attribut'])),
-            tri(list(aliments['main_type']))[6]: merge(list(aides['french_name']),list(aides['french_attribut'])),
-            tri(list(aliments['main_type']))[7]: merge(list(sucres['french_name']),list(sucres['french_attribut'])),
-            tri(list(aliments['main_type']))[8]: merge(list(glaces['french_name']),list(glaces['french_attribut'])),
-            tri(list(aliments['main_type']))[9]: merge(list(gras['french_name'])+'-'+list(gras['french_attribut'])),
-            tri(list(aliments['main_type']))[10]: merge(list(bebes['french_name']),list(bebes['french_attribut']))
+            tri(list(aliments['main_type']))[0] : list(cereales['french_tag']),
+            tri(list(aliments['main_type']))[1]: list(Boisson['french_tag']),
+            tri(list(aliments['main_type']))[2]: list(Fruits['french_tag']),
+            tri(list(aliments['main_type']))[3]: list(Entreés['french_tag']),
+            tri(list(aliments['main_type']))[4]: list(lait['french_tag']),
+            tri(list(aliments['main_type']))[5]: list(viandes['french_tag']),
+            tri(list(aliments['main_type']))[6]: list(aides['french_tag']),
+            tri(list(aliments['main_type']))[7]: list(sucres['french_tag']),
+            tri(list(aliments['main_type']))[8]: list(glaces['french_tag']),
+            tri(list(aliments['main_type']))[9]: list(gras['french_tag']),
+            tri(list(aliments['main_type']))[10]: list(bebes['french_tag'])
 
         }
         
@@ -132,7 +126,6 @@ class SelectionApp:
             self.historique.delete(item)
         
     def ajouter_selection(self):
-        
         categorie = self.combo_categorie.get()
         item = self.combo_items.get()
         
@@ -142,10 +135,10 @@ class SelectionApp:
             #self.historique.insert("end", f"{selection}\n")
             
             ## Récupérer l'item
-            selectedItem = aliments.loc[aliments["french_name"] == item.split(" - ")[0]].loc[aliments["french_attribut"] == item.split(" - ")[1]]
+            selectedItem = aliments.loc[aliments["french_tag"] == item]
 
             ## ajouter la categorie, l'item et la quantitée de CO2
-            self.historique.insert("", "end", values=(list(selectedItem["main_type"])[0], list(selectedItem["french_name"])[0], list(selectedItem["CO2"])[0]), )
+            self.historique.insert("", "end", values=(list(selectedItem["main_type"])[0], list(selectedItem["french_tag"])[0], list(selectedItem["CO2"])[0]), )
 
             ## Display confirmation message
             messagebox.showinfo("Succès", "Sélection ajoutée avec succès!")
@@ -176,36 +169,72 @@ class SelectionApp:
             json.dump(result_json, f, ensure_ascii=False, indent=2)
         messagebox.showinfo("Succès", f"Sélections sauvegardées dans {filename}")
 
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = SelectionApp(root)
+    root.mainloop()
+
 
 
 def calculate():
-    print ( " l evaluation est approximative car elle regroupe les consommations de plusieurs produits d une meme categorie pour faciliter l utilisation.")
-          
+    print("L'évaluation est approximative car elle regroupe les consommations de plusieurs produits d'une même catégorie pour faciliter l'utilisation.")
+    
     questions = {
         "energie": {
-            "type": 
-            "Quel type d'énergie utilisez-vous"\
-            "(écrire : fioul, gaz, granules, electricite) ?\n",
-            "qty": "Quantite (en kWh) ?"
+            "type": ("Quel type d'énergie utilisez-vous "
+                    "(écrire : fioul, gaz, granules, electricite) ?\n"),
+            "qty": "Quantité (en kWh) ?"
         },
         "equipements": {
-            "type":
-            "Quels équipements utilisez vous parmis les suivants"\
-            "Appareil à raclettes 6-8p ; Aspirateur ménager avec sac; Aspirateur ménager sans sac; Aspirateur professionnel à traineaux;Ballon électrique chauffe-eau 200L ;"
-            "Bouilloire ;Climatiseur mobile ;Congélateur armoire;Congélateur coffre;Four électrique encastrable;Four professionnel;Gazinière Gazinière;Hotte décorative à extraction;" 
-            "Hotte visière à recyclage d'air;Lave-linge capacité 5 kg;Lave-linge capacité 7kg;Lave-vaisselle compact;Lave-vaisselle professionnel;Lave-vaisselle standard;Machine à café dosette;"
-            "Machine à café expresso;Machine à café filtre;Machine à pain ;Micro-onde ;Mini-four électrique;Plaques de cuisson à induction  9000W;Plaques de cuisson au gaz 9000W;"
-            "Plaques de cuisson vitrocéramiques 9000W;Radiateur électrique 1000 W à inertie;Radiateur électrique 1000 W à rayonnement;Réfrigérateur combiné;Réfrigérateur mini-bar;"
-            "Réfrigétateur 1 grande porte;Robot multifonction ;Séche linge à évacuation;Sèche-linge à condensation;Sèche-linge à pompe à chaleur;yaourtière 8 pots"
-
+            "type": (
+                "Quels équipements utilisez-vous parmi les suivants :\n"
+                "- Appareil à raclettes 6-8p\n"
+                "- Aspirateur ménager avec sac\n"
+                "- Aspirateur ménager sans sac\n"
+                "- Aspirateur professionnel à traineaux\n"
+                "- Ballon électrique chauffe-eau 200L\n"
+                "- Bouilloire\n"
+                "- Climatiseur mobile\n"
+                "- Congélateur armoire\n"
+                "- Congélateur coffre\n"
+                "- Four électrique encastrable\n"
+                "- Four professionnel\n"
+                "- Gazinière\n"
+                "- Hotte décorative à extraction\n"
+                "- Hotte visière à recyclage d'air\n"
+                "- Lave-linge capacité 5 kg\n"
+                "- Lave-linge capacité 7kg\n"
+                "- Lave-vaisselle compact\n"
+                "- Lave-vaisselle professionnel\n"
+                "- Lave-vaisselle standard\n"
+                "- Machine à café dosette\n"
+                "- Machine à café expresso\n"
+                "- Machine à café filtre\n"
+                "- Machine à pain\n"
+                "- Micro-onde\n"
+                "- Mini-four électrique\n"
+                "- Plaques de cuisson à induction 9000W\n"
+                "- Plaques de cuisson au gaz 9000W\n"
+                "- Plaques de cuisson vitrocéramiques 9000W\n"
+                "- Radiateur électrique 1000W à inertie\n"
+                "- Radiateur électrique 1000W à rayonnement\n"
+                "- Réfrigérateur combiné\n"
+                "- Réfrigérateur mini-bar\n"
+                "- Réfrigérateur 1 grande porte\n"
+                "- Robot multifonction\n"
+                "- Sèche-linge à évacuation\n"
+                "- Sèche-linge à condensation\n"
+                "- Sèche-linge à pompe à chaleur\n"
+                "- Yaourtière 8 pots\n"
+            )
         }
     }
     
 
-    for ty in questions:
-        print(f"\n\nCatégorie : {ty}")
-        for subty in questions.get(ty):
-            input(questions.get(ty).get(subty))
+    #for ty in questions:
+    #    print(f"\n\nCatégorie : {ty}")
+     #   for subty in questions.get(ty):
+      #      input(questions.get(ty).get(subty))
 
     #print(f"Votre empreinte carbone est de {carbone_empreinte:.1f} tonnes")
 
