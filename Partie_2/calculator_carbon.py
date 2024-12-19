@@ -223,7 +223,7 @@ questions = {
         },
         "Equipements": {
             "type": (
-                "Quels équipements utilisez-vous parmi les suivants :\n"
+                "Quels équipements utilisez-vous parmi les suivants : ( séparer les équipements par des virgules ',' )\n"
                 "- Appareil à raclettes 6-8p\n"
                 "- Aspirateur ménager avec sac\n"
                 "- Aspirateur ménager sans sac\n"
