@@ -1,0 +1,10 @@
+{
+  "produits": [
+    {
+      "cat": "Produits céréaliers",
+      "prod": "céréales de petit-déjeuner et biscuits,Agribalyse,Barre céréalière équilibre aux fruits",
+      "co2": 2.46
+    }
+  ],
+  "TTCO2": 2.46
+}
