@@ -10,7 +10,7 @@ Ce fichier décrit le projet **carbsimulator** qui vise à créer un package pyt
 
 La première étape est de télécharger les fichiers de ce dossier, en utilisant la commande : 
 ```
-git clone https://github.com/votre-utilisateur/projet-ISUP-Python.git
+git clone https://github.com/CharlesElie-AzaisdeVergeron/projet-ISUP-Python
 ```
 
 Pour exécuter les scripts dans ce fichier certaines bibliothèques python sont nécessaires, exécuter la commande suivante dans le dossier téléchargé avec votre env python activé avant de commencer :
